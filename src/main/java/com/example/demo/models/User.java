@@ -43,10 +43,10 @@ public class User extends BaseEntity implements UserDetails {
     private Date dateOfBirth;
 
     @Column(name = "facebook_account_id")
-    private int facebookId;
+    private int facebookAccountId;
 
     @Column(name = "google_account_id")
-    private int googleId;
+    private int googleAccountId;
 
     @ManyToOne
     @JoinColumn(name = "role_id")

@@ -2,8 +2,10 @@ package com.example.demo.controllers;
 
 import com.example.demo.dtos.UserDTO;
 import com.example.demo.dtos.UserLoginDTO;
+import com.example.demo.models.User;
 import com.example.demo.responses.LoginResponse;
 import com.example.demo.responses.RegisterResponse;
+import com.example.demo.responses.UserResponse;
 import com.example.demo.services.IUserService;
 import com.example.demo.components.LocalizationUtils;
 import com.example.demo.utils.MessageKeys;
@@ -13,10 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -84,4 +83,14 @@ public class UserController {
         }
     }
 
+    @PostMapping("/details")
+    public ResponseEntity<UserResponse> getUserDetails(@RequestHeader("Authorization") String token) {
+        try {
+            String extractedToken = token.substring(7); // Loại bỏ "Bearer " từ chuỗi token
+            User user = userService.getUserDetailsFromToken(extractedToken);
+            return ResponseEntity.ok(UserResponse.fromUser(user));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

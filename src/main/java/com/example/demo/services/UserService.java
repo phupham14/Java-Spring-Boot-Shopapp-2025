@@ -44,8 +44,8 @@ public class UserService implements IUserService{
                 .password(userDTO.getPassword())
                 .address(userDTO.getAddress())
                 .dateOfBirth(userDTO.getDateOfBirth())
-                .facebookId(userDTO.getFacebookId())
-                .googleId(userDTO.getGoogleId())
+                .facebookAccountId(userDTO.getFacebookId())
+                .googleAccountId(userDTO.getGoogleId())
                 .build();
         newUser.setRole(role);
         if (userDTO.getFacebookId() == 0 && userDTO.getGoogleId() == 0) {
@@ -65,7 +65,7 @@ public class UserService implements IUserService{
 
         User existingUser = optionalUser.get();
 
-        if (existingUser.getFacebookId() == 0 && existingUser.getGoogleId() == 0) {
+        if (existingUser.getFacebookAccountId() == 0 && existingUser.getGoogleAccountId() == 0) {
             // So sánh mật khẩu đúng cách
             if (!passwordEncoder.matches(password, existingUser.getPassword())) {
                 throw new DataNotFoundException("Invalid phone number or password");
@@ -86,4 +86,18 @@ public class UserService implements IUserService{
         return jwtTokenUtil.generateToken(existingUser);
     }
 
+    @Override
+    public User getUserDetailsFromToken(String token) throws Exception {
+        if(jwtTokenUtil.isTokenExpired(token)) {
+            throw new Exception("Token is expired");
+        }
+        String phoneNumber = jwtTokenUtil.extractPhoneNumber(token);
+        Optional<User> user = userReposistory.findByPhoneNumber(phoneNumber);
+
+        if (user.isPresent()) {
+            return user.get();
+        } else {
+            throw new Exception("User not found");
+        }
+    }
 }
