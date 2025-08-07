@@ -14,6 +14,8 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class ProductDTO {
+    private Long id;
+
     @NotBlank(message = "Title is required")
     @Size(min = 3, message = "Name must be greater than 3")
     private String name;

@@ -15,6 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class ProductResponse extends BaseResponse {
+    private Long id;
     private String name;
     private Float price;
     private String thumbnail;
@@ -25,6 +26,7 @@ public class ProductResponse extends BaseResponse {
 
     public static ProductResponse fromProduct(Products products) {
         ProductResponse productResponse = ProductResponse.builder()
+                .id(products.getId())
                 .name(products.getName())
                 .price(products.getPrice())
                 .thumbnail(products.getThumbnail())
