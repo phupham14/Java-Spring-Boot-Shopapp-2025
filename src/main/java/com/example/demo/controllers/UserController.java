@@ -2,6 +2,7 @@ package com.example.demo.controllers;
 
 import com.example.demo.dtos.UserDTO;
 import com.example.demo.dtos.UserLoginDTO;
+import com.example.demo.exceptions.PermissionDeniedException;
 import com.example.demo.models.User;
 import com.example.demo.responses.LoginResponse;
 import com.example.demo.responses.RegisterResponse;
@@ -90,6 +91,27 @@ public class UserController {
             User user = userService.getUserDetailsFromToken(extractedToken);
             return ResponseEntity.ok(UserResponse.fromUser(user));
         } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    // Cập nhật user
+    @PutMapping("/details/{id}")
+    public ResponseEntity<UserResponse> updateUser(
+            @PathVariable Long id,
+            @RequestBody UserDTO userDTO,
+            @RequestHeader("Authorization") String token) {
+        try {
+            String extractedToken = token.substring(7); // Loại bỏ "Bearer " từ chuỗi token
+            User user = userService.getUserDetailsFromToken(extractedToken);
+            if (!user.getId().equals(id)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            User updatedUser = userService.updateUser(id, userDTO);
+            return ResponseEntity.ok(UserResponse.fromUser(updatedUser));
+        } catch (Exception e) {
+            System.err.println("Permission denied: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }

@@ -14,6 +14,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -55,6 +56,63 @@ public class UserService implements IUserService{
         }
         return userReposistory.save(newUser);
     }
+
+    @Transactional
+    @Override
+    public User updateUser(Long id, UserDTO userDTO) throws Exception {
+        // Tìm user hiện tại
+        User existingUser = userReposistory.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Lấy role từ DTO
+        Role role = roleReposistory.findById(userDTO.getRoleId())
+                .orElseThrow(() -> new RuntimeException("Role not found"));
+        System.out.println("Role name: " + role.getName());
+
+        // Kiểm tra nếu user thay đổi số điện thoại
+        String newPhoneNumber = userDTO.getPhoneNumber();
+        if (!existingUser.getPhoneNumber().equals(newPhoneNumber)) {
+            // Nếu số mới đã tồn tại cho user khác → lỗi
+            if (userReposistory.existsByPhoneNumber(newPhoneNumber)) {
+                throw new RuntimeException("Phone number already in use by another user");
+            }
+            existingUser.setPhoneNumber(newPhoneNumber);
+        }
+
+        // Kiểm tra nếu cố gắng cập nhật role thành ADMIN
+        if (role.getName().toUpperCase().equals(Role.ADMIN)) {
+            throw new PermissionDeniedException("You don't have permission to assign admin role.");
+        }
+
+        // Cập nhật thông tin user nếu không null
+        if (userDTO.getFullName() != null) {
+            existingUser.setFullName(userDTO.getFullName());
+        }
+        if (userDTO.getAddress() != null) {
+            existingUser.setAddress(userDTO.getAddress());
+        }
+
+        if (userDTO.getDateOfBirth() != null) {
+            existingUser.setDateOfBirth(userDTO.getDateOfBirth());
+        }
+
+        if (userDTO.getFacebookId() > 0) {
+            existingUser.setFacebookAccountId(userDTO.getFacebookId());
+        }
+
+        if (userDTO.getGoogleId() > 0) {
+            existingUser.setGoogleAccountId(userDTO.getGoogleId());
+        }
+
+        // Cập nhật mật khẩu nếu là user thường (không đăng nhập bằng Facebook/Google)
+        if (userDTO.getFacebookId() == 0 && userDTO.getGoogleId() == 0 && userDTO.getPassword() != null) {
+            String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
+            existingUser.setPassword(encodedPassword);
+        }
+
+        return userReposistory.save(existingUser);
+    }
+
 
     @Override
     public String login(String phoneNumber, String password) throws Exception {

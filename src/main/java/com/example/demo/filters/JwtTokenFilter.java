@@ -76,7 +76,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 Pair.of(String.format("%s/products/images/[^/]+$", bypassToken), "GET"),
                 Pair.of(String.format("%s/categories", bypassToken), "GET"),
                 Pair.of(String.format("%s/users/register", bypassToken), "POST"),
-                Pair.of(String.format("%s/users/login", bypassToken), "POST")
+                Pair.of(String.format("%s/users/login", bypassToken), "POST"),
+                Pair.of(String.format("%s/users/details", bypassToken), "PUT")
 
         );
         for (Pair<String, String> bypassToken : bypassTokens) {
