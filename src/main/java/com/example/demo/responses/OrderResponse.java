@@ -61,10 +61,9 @@ public class OrderResponse extends BaseResponse {
     private List<OrderDetail> orderDetails;
 
     public static OrderResponse fromOrder(Order order) {
-        OrderResponse orderResponse =  OrderResponse
-                .builder()
+        return OrderResponse.builder()
                 .id(order.getId())
-                .userId(order.getId())
+                .userId(order.getUser() != null ? order.getUser().getId() : null)
                 .fullName(order.getFullName())
                 .phoneNumber(order.getPhoneNumber())
                 .email(order.getEmail())
@@ -72,14 +71,14 @@ public class OrderResponse extends BaseResponse {
                 .note(order.getNote())
                 .orderDate(order.getOrderDate())
                 .status(order.getStatus())
-                .totalMoney(order.getTotalMoney())
+                .totalMoney(order.getTotalMoney() != null ? order.getTotalMoney() : 0.0)
                 .shippingMethod(order.getShippingMethod())
                 .shippingAddress(order.getShippingAddress())
                 .shippingDate(order.getShippingDate())
                 .paymentMethod(order.getPaymentMethod())
                 .orderDetails(order.getOrderDetails())
                 .build();
-        return orderResponse;
     }
+
 
 }

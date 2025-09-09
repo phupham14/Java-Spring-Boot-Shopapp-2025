@@ -31,12 +31,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("${api.prefix}/products")
 @RequiredArgsConstructor
 public class ProductController {
+    private static final Logger logger = Logger.getLogger(ProductController.class.getName());
     private final IProductService productService;
     private final LocalizationUtils localizationUtils;
 
@@ -173,6 +175,7 @@ public class ProductController {
         PageRequest pageRequest = PageRequest.of(page, size,
                 //Sort.by("createdAt").descending()
                 Sort.by(Sort.Direction.ASC, "id"));
+        logger.info("keyword: " + keyword + ", categoryId: " + categoryId + ", page: " + page + ", size: " + size);
         Page<ProductResponse> products = productService.getAllProducts(keyword, categoryId, pageRequest);
         // Lấy tổng số trang
         int totalPages = products.getTotalPages();

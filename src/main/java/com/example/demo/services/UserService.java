@@ -131,9 +131,9 @@ public class UserService implements IUserService{
         }
 
         Optional<Role> optionalRole = roleReposistory.findById(existingUser.getRole().getId());
-        if (optionalRole.isPresent() && Role.ADMIN.equalsIgnoreCase(optionalRole.get().getName())) {
-            throw new DataNotFoundException(localizationUtils.getLocalizedMessage("error.login.invalid"));
-        }
+//        if (optionalRole.isPresent() && Role.ADMIN.equalsIgnoreCase(optionalRole.get().getName())) {
+//            throw new DataNotFoundException(localizationUtils.getLocalizedMessage("error.login.invalid"));
+//        }
 
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(phoneNumber, password, existingUser.getAuthorities());

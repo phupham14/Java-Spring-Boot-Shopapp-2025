@@ -11,6 +11,8 @@ import com.example.demo.reposistories.UserReposistory;
 import com.example.demo.responses.OrderResponse;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -107,6 +109,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
+    @Transactional
     public void deleteOrder(long id) {
         Order order = orderReposistory.findById(id).orElse(null);
         if (order != null) {
@@ -119,4 +122,11 @@ public class OrderService implements IOrderService {
     public List<Order> findByUserId(Long userId) {
         return orderReposistory.findByUserId(userId);
     }
+
+    @Override
+    public Page<OrderResponse> getAllOrders(String keyword, Pageable pageable) {
+        Page<Order> orders = orderReposistory.findByKeyword(keyword, pageable);
+        return orders.map(OrderResponse::fromOrder);
+    }
+
 }

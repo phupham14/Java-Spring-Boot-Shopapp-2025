@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.CorsConfigurer;
@@ -23,8 +25,8 @@ import java.util.List;
 import static org.springframework.http.HttpMethod.*;
 
 @Configuration
-//@EnableMethodSecurity
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
+@EnableMethodSecurity(prePostEnabled = true)
 @EnableWebMvc
 @RequiredArgsConstructor
 public class WebSecurityConfig {
@@ -32,7 +34,6 @@ public class WebSecurityConfig {
     @Value("${api.prefix}")
     private String apiPrefix;
     @Bean
-    //Pair.of(String.format("%s/products", apiPrefix), "GET"),
     public SecurityFilterChain securityFilterChain(HttpSecurity http)  throws Exception{
         http
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
@@ -84,10 +85,10 @@ public class WebSecurityConfig {
                                     String.format("%s/orders/**", apiPrefix)).hasAnyRole(Role.USER)
 
                             .requestMatchers(GET,
-                                    String.format("%s/orders/**", apiPrefix)).permitAll()
+                                    String.format("%s/orders/user/**", apiPrefix)).permitAll()
 
                             .requestMatchers(GET,
-                                    String.format("%s/orders/user/**", apiPrefix)).permitAll()
+                                    String.format("%s/orders/{id}", apiPrefix)).permitAll()
 
                             .requestMatchers(PUT,
                                     String.format("%s/orders/**", apiPrefix)).hasRole(Role.ADMIN)
@@ -108,6 +109,8 @@ public class WebSecurityConfig {
                             .requestMatchers(DELETE,
                                     String.format("%s/order_details/**", apiPrefix)).hasRole(Role.ADMIN)
 
+                            .requestMatchers(GET,
+                                    String.format("%s/healthcheck/**", apiPrefix)).permitAll()
 
                             .anyRequest().authenticated();
                     //.anyRequest().permitAll();

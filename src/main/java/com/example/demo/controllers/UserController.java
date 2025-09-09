@@ -12,6 +12,7 @@ import com.example.demo.components.LocalizationUtils;
 import com.example.demo.utils.MessageKeys;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("${api.prefix}/users")
 @RequiredArgsConstructor
@@ -78,8 +80,10 @@ public class UserController {
                             .token(token)
                     .build()); // Trả về JSON chuẩn
         } catch (Exception e) {
+            String errorMsg = localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_FAILED) + ": " + e.getMessage();
+            log.info(errorMsg);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(LoginResponse.builder()
-                            .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_FAILED))
+                            .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_FAILED)+ ": " + e.getMessage())
                             .build());
         }
     }

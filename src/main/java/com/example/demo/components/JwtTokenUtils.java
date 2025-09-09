@@ -16,6 +16,7 @@ import java.security.Key;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -34,6 +35,7 @@ public class JwtTokenUtils {
     public String generateToken(User user) throws Exception {
         Map<String, Object> claims = new HashMap<>();
         claims.put("phoneNumber", user.getPhoneNumber());
+        //claims.put("roles", List.of("ROLE_ADMIN"));
 
         try {
             return builder()
@@ -88,4 +90,10 @@ public class JwtTokenUtils {
         String phoneNumber = extractPhoneNumber(token);
         return (phoneNumber.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
+
+    @SuppressWarnings("unchecked")
+    public List<String> extractRoles(String token) {
+        return getClaim(token, claims -> (List<String>) claims.get("roles"));
+    }
+
 }

@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.internal.Pair;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -52,6 +53,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             }
             final String token = authHeader.substring(7);
             final String phoneNumber = jwtTokenUtil.extractPhoneNumber(token);
+            //List<String> roles = jwtTokenUtil.extractRoles(token);
+
             if (phoneNumber != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails existingUser = userDetailsService.loadUserByUsername(phoneNumber);
                 if (jwtTokenUtil.validateToken(token, existingUser)) {
@@ -59,8 +62,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                             existingUser, null, existingUser.getAuthorities());
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+
                 }
             }
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            System.out.println("==> Authenticated User: " + auth.getName());
+            System.out.println("==> Authorities: " + auth.getAuthorities());
             filterChain.doFilter(request, response);
         } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
@@ -72,17 +79,32 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         final List<Pair<String, String>> bypassTokens = Arrays.asList(
                 Pair.of(String.format("%s/roles", bypassToken), "GET"),
                 Pair.of(String.format("%s/products", bypassToken), "GET"),
-                Pair.of(String.format("%s/orders", bypassToken), "GET"),
+                Pair.of(String.format("%s/healthcheck/health", bypassToken), "GET"),
+                Pair.of(String.format("%s/order_details", bypassToken), "GET"),
+                Pair.of(String.format("%s/products/[^/]+$", bypassToken), "GET"),
                 Pair.of(String.format("%s/products/images/[^/]+$", bypassToken), "GET"),
                 Pair.of(String.format("%s/categories", bypassToken), "GET"),
                 Pair.of(String.format("%s/users/register", bypassToken), "POST"),
-                Pair.of(String.format("%s/users/login", bypassToken), "POST"),
-                Pair.of(String.format("%s/users/details", bypassToken), "PUT")
-
+                Pair.of(String.format("%s/users/login", bypassToken), "POST")
         );
-        for (Pair<String, String> bypassToken : bypassTokens) {
-            if (request.getServletPath().contains(bypassToken.getLeft())
-                    && request.getMethod().equals(bypassToken.getRight())) {
+
+        final String path = request.getServletPath();
+        final String method = request.getMethod();
+
+        if (path.startsWith(String.format("/%s/orders", bypassToken))
+                && method.equals("GET")) {
+            // Check if the requestPath matches the desired pattern
+            if (path.matches(String.format("/%s/orders/\\d+", bypassToken))) {
+                return true;
+            }
+            // If the requestPath is just "%s/orders", return true
+            if (path.equals(String.format("/%s/orders", bypassToken))) {
+                return true;
+            }
+        }
+
+        for (Pair<String, String> bypass : bypassTokens) {
+            if (path.matches(bypass.getLeft()) && method.equals(bypass.getRight())) {
                 return true;
             }
         }
